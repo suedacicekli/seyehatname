@@ -4,19 +4,16 @@ import * as d3 from "d3";
 
 function MapSvg({ selectedCities, onClick, colors }) {
   const tooltipRef = useRef();
-  const svgRef = useRef(); // SVG referansı oluşturun
+  const svgRef = useRef();
 
-  // Renkleri dışarıdan al
   const MAP_COLOR = colors[0];
   const HOVER_COLOR = colors[1];
   const SELECTED_COLORS = colors.slice(2);
 
-  // Seçili şehirler için renk atama fonksiyonu
   const getSelectedColor = (cityIndex) => {
     return SELECTED_COLORS[cityIndex % SELECTED_COLORS.length];
   };
 
-  // Renk açma fonksiyonu
   const adjustColorBrightness = (color, percent) => {
     let R = parseInt(color.slice(1, 3), 16);
     let G = parseInt(color.slice(3, 5), 16);
@@ -39,13 +36,11 @@ function MapSvg({ selectedCities, onClick, colors }) {
       const projection = d3.geoEqualEarth().fitSize([width, height], data);
       const pathGenerator = d3.geoPath().projection(projection);
 
-      // SVG'yi sadece bir kez oluştur
       const svg = d3.select(svgRef.current);
       svg
         .attr("viewBox", `0 0 ${width} ${height}`)
         .attr("preserveAspectRatio", "xMidYMid meet");
 
-      // Haritayı çizin ve güncellenebilir duruma getirin
       const paths = svg.selectAll("path").data(data.features);
 
       paths
@@ -66,14 +61,10 @@ function MapSvg({ selectedCities, onClick, colors }) {
               ? adjustColorBrightness(
                   getSelectedColor(selectedCities.indexOf(d.properties.number)),
                   0.2
-                ) // 20% açma
+                )
               : HOVER_COLOR
           );
 
-          // Şehir ismini göstermek için:
-          svg
-            .select(`#text-${d.properties.number}`)
-            .style("visibility", "visible");
         })
         .on("mouseout", function (event, d) {
           const isSelected = selectedCities.includes(d.properties.number);
@@ -83,11 +74,6 @@ function MapSvg({ selectedCities, onClick, colors }) {
               ? getSelectedColor(selectedCities.indexOf(d.properties.number))
               : MAP_COLOR
           );
-
-          // Şehir ismini gizlemek için:
-          svg
-            .select(`#text-${d.properties.number}`)
-            .style("visibility", "hidden");
         })
         .on("click", function (event, d) {
           onClick(d);
@@ -100,27 +86,25 @@ function MapSvg({ selectedCities, onClick, colors }) {
           );
         });
 
-      // Şehir isimlerini ekle
       svg
         .selectAll("text")
         .data(data.features)
         .join("text")
-        .attr("id", (d) => `text-${d.properties.number}`) // Her şehir için benzersiz bir ID ver
+        .attr("id", (d) => `text-${d.properties.number}`) 
         .text((d) => d.properties.name)
         .attr("x", (d) => pathGenerator.centroid(d)[0])
         .attr("y", (d) => pathGenerator.centroid(d)[1])
         .attr("text-anchor", "middle")
-        .attr("font-size", "10pt") // İstenilen yazı boyutunu ayarlayabilirsiniz
+        .attr("font-size", "6pt") 
         .attr("pointer-events", "none")
-        .attr("fill", "#000")
-        .style("visibility", "hidden"); // Başlangıçta gizle
+        .attr("fill", "#FBFBFB")
+        .attr("fill-opacity", 0.7);
     });
-  }, [selectedCities, colors]); // colors prop'unu da bağımlılıklar arasına ekleyin
+  }, [selectedCities, colors]);
 
   return (
     <div id="mapContainer" style={{ width: "100%", height: "auto" }}>
       <svg ref={svgRef} style={{ width: "100%", height: "auto" }}></svg>{" "}
-      {/* SVG'yi burada oluşturun */}
       <Tooltip tooltipRef={tooltipRef} />
     </div>
   );
